@@ -1,7 +1,6 @@
 show databases;
 use defaultdb;
 
-
 create table users(
 id int auto_increment primary key,
 name varchar(50),
@@ -42,7 +41,11 @@ drop table users;
 select * from users;
 select * from stored_files;
 
-update users set role='admin';
+update users set status='active';
+BEGIN;
+DELETE FROM users WHERE id = 7;
+COMMIT;
+ROLLBACK;
 
 
 
