@@ -45,6 +45,34 @@ def add_new_user():
 
 
 
+@admin_bp.route('/v1/admin-delete-user/<int:id>', methods=["DELETE"])
+@token_required
+@status_required("active")
+@role_required("admin")
+def admin_delete_user(id):
+
+    db = get_db_connection()
+    cur = db.cursor(dictionary=True)
+    try:
+        cur.execute("""
+            DELETE FROM users
+            WHERE id = %s
+        """, (id,))
+        db.commit()
+        if cur.rowcount == 0:
+            return jsonify({"error": "User not found"}), 404
+
+        return jsonify({"msg": "User Delete Sucessful"}), 200
+
+    except Exception as e:
+        print(f"Error = {str(e)}")
+        return jsonify({"error": "Internal server error"}), 500
+    finally:
+        cur.close()
+        db.close()
+
+
+
 @admin_bp.route("/v1/storage", methods=["GET"])
 @token_required
 @status_required("active")
