@@ -324,5 +324,4 @@ if not os.path.exists(FILE_PATH):
 def view_notice():
     with open(FILE_PATH, "r") as f:
         data = json.load(f)
-        print("data===", data)
     return jsonify(data)
