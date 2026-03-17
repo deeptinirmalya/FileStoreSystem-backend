@@ -7,7 +7,7 @@ app = Flask(__name__)
 # CORS(app, supports_credentials=True)
 CORS(
     app,
-    origins=["https://giet.netlify.app/"],
+    origins=["https://giet.netlify.app"],
     supports_credentials=True
 )
 
