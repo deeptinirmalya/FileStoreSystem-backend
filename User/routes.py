@@ -6,6 +6,7 @@ from Database.db import get_db_connection
 from werkzeug.security import check_password_hash, generate_password_hash
 import os
 import base64
+import json
 import io
 
 user_bp = Blueprint('user', __name__)
@@ -310,3 +311,18 @@ def download_file(file_id):
         cur.close()
     
 
+# === NOTICE PAGE ====
+
+FILE_PATH = "message.json"
+
+
+if not os.path.exists(FILE_PATH):
+    with open(FILE_PATH, "w") as f:
+        json.dump({"message": ""}, f)
+        
+@user_bp.route("/v1/view-notice", methods=["GET"])
+def view_notice():
+    with open(FILE_PATH, "r") as f:
+        data = json.load(f)
+        print("data===", data)
+    return jsonify(data)

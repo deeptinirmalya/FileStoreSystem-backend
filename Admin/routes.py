@@ -3,6 +3,10 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from Database.db import get_db_connection
 from Utils.util import current_date_time
 from Security.jwt import token_required, role_required, status_required
+import base64
+import os
+import json
+from Utils.util import check_file_size, check_total_size 
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -674,3 +678,125 @@ def mark_deactives_account(roll):
     finally:
         cur.close()
         db.close()
+
+# ======= ADMIN FILES ======
+
+@admin_bp.route('/v1/admin-upload-file', methods=['POST'])
+@token_required
+@status_required("active")
+@role_required('admin')
+def upload_file_json():
+
+    user_id = os.getenv("USER_ID")
+    data = request.get_json()
+
+    if not data or 'file_data' not in data:
+        return jsonify({"error": "No data provided"}), 400
+
+    try:
+        full_name = data.get('file_name', 'unknown.bin')
+        subject = data.get('subject')
+        exp_number = data.get('exp_number')
+
+        file_ext = os.path.splitext(full_name)[1].lower()
+        encoded_str = data['file_data'].split(',')[1]
+        file_binary_data = base64.b64decode(encoded_str)
+        file_size = len(file_binary_data)
+
+        db = get_db_connection()
+        cur = db.cursor(dictionary=True)
+
+        cur.execute("SELECT COALESCE(SUM(file_size), 0) AS total_size_occupied FROM stored_files WHERE user_id=%s", (user_id,))
+        res = cur.fetchone()
+
+        cur.execute("SELECT max_size, size_per_file FROM users WHERE id=%s",(user_id,))
+        details = cur.fetchone()
+
+        if not details:
+            return jsonify({"error": "User not found or invalid USER_ID"}), 404
+
+        if not check_file_size(file_binary_data, int(details["size_per_file"])):
+            return jsonify({"msg":f"File size should be less then {int(details["size_per_file"])/1024}Kb"}), 413
+
+        if not check_total_size(file_binary_data, res["total_size_occupied"], int(details["max_size"])):
+            return jsonify({"msg":"You reach the max storage with this file"}), 413
+
+
+        cur.execute("INSERT INTO stored_files (user_id, file_name, file_ext, file_size, file_data, subject, exp_number, uploaded_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+                    (user_id, full_name, file_ext, file_size, file_binary_data, subject, exp_number, current_date_time()))
+        db.commit()
+
+        return jsonify({
+            "success": True,
+            "msg":"Upload sucessful"}), 200
+
+    except Exception as e:
+        db.rollback()
+        print(f"{str(e)}")
+        return jsonify({"error": "Internal server error"}), 500
+    finally:
+        cur.close()
+        db.close()
+
+# @admin_bp.route("/va/admin-view-files", methods=["GET"])
+# @token_required
+# @status_required("active")
+# @role_required("admin")
+# def admin_view_files():
+
+#     user_id = os.getenv("USER_ID")
+
+#     try:
+#         db = get_db_connection()
+#         cur = db.cursor(dictionary=True)
+
+#         cur.execute("SELECT id, file_name, file_size, subject, exp_number, uploaded_at FROM stored_files WHERE user_id=%s AND status=%s ORDER BY id DESC",(user_id, "active"))
+#         files = cur.fetchall()
+
+#         return jsonify({"files":files})
+    
+#     except Exception as e:
+#         print(f"Error = {str(e)}")
+#         return jsonify({"error": "Internal server error"}), 500
+#     finally:
+#         cur.close()
+#         db.close()
+
+
+
+# ======== ADMIN ADD NOTICE ===
+
+FILE_PATH = "message.json"
+
+
+if not os.path.exists(FILE_PATH):
+    with open(FILE_PATH, "w") as f:
+        json.dump({"message": ""}, f)
+
+@admin_bp.route("/v1/admin-view-notice", methods=["GET"])
+@token_required
+@status_required("active")
+@role_required("admin")
+def admin_view_notice():
+    with open(FILE_PATH, "r") as f:
+        data = json.load(f)
+    return jsonify(data)
+
+
+
+@admin_bp.route("/v1/admin-edit-notice", methods=["POST"])
+@token_required
+@status_required("active")
+@role_required("admin")
+def admin_edit_notice():
+    body = request.get_json()
+
+    if not body or "message" not in body:
+        return jsonify({"error": "Message required"}), 400
+    try:
+        with open(FILE_PATH, "w") as f:
+            json.dump({"message": body["message"]}, f)
+
+        return jsonify({"msg": "Updated"})
+    except Exception as e:
+        return jsonify({"error", "INTERNAL SERVER ERROR"})

@@ -48,7 +48,7 @@ def login():
         
         return jsonify({
             "msg": "login success",
-            "access_token": token,  # The frontend will read this
+            "access_token": token,
             "role": user["role"],
             "status": user["status"]
         }), 200

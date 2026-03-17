@@ -4,7 +4,12 @@ from flask_cors import CORS
 from Database.db import get_db_connection
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True)
+# CORS(app, supports_credentials=True)
+CORS(
+    app,
+    origins=["https://giet.netlify.app/"],
+    supports_credentials=True
+)
 
 limiter.init_app(app)
 

@@ -5,7 +5,7 @@ import os
 
 load_dotenv()
 
-# Absolute path to backend/
+# # Absolute path to backend/
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SSL_CA_RELATIVE = os.getenv("SSL_CA")
