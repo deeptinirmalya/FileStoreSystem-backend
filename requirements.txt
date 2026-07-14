@@ -10,3 +10,4 @@ cryptography==44.0.0
 pushbullet.py==0.12.0
 python-dotenv==1.0.1
 pytz==2025.1
+redis==6.4.0

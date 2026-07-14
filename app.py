@@ -6,15 +6,16 @@ from Database.db import get_db_connection
 
 app = Flask(__name__)
 
+
 CORS(
     app,
-    origins=["https://giet.netlify.app", "https://at-logs.netlify.app"],
+    origins=["https://giet.netlify.app", "https://at-logs.netlify.app", "https://vibelist.in"],
     supports_credentials=True
 )
 
 # CORS(
 #     app, 
-#     origins=["http://127.0.0.1:5501", "http://localhost:5501"], 
+#     origins=["http://127.0.0.1:5501", "http://localhost:5501", "http://127.0.0.1:5173", "http://localhost:5173"], 
 #     supports_credentials=True
 # )
 
@@ -31,6 +32,9 @@ app.register_blueprint(user_bp, url_prefix='/user')
 
 from attendence.routes import attendence_bp
 app.register_blueprint(attendence_bp, url_prefix='/attendence')
+
+from other.routes import stp_bp
+app.register_blueprint(stp_bp, url_prefix='/stp')
 
 @app.route('/', methods=['GET'])
 def health_check():
