@@ -84,7 +84,7 @@ def validate_creator_request(data):
 
 
 @stp_bp.route('/v1/creator_entry', methods=['POST'])
-@limiter.limit("100 per day",
+@limiter.limit("100 per year",
     on_breach=lambda rl: (
         jsonify({
             "success": False,
@@ -289,7 +289,7 @@ def validate_payload(data):
 
 
 @stp_bp.route("/v1/partners_entry", methods=["POST"])
-@limiter.limit("100 per day",
+@limiter.limit("1 per year",
     on_breach=lambda rl: (
         jsonify({
             "success": False,

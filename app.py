@@ -2,7 +2,10 @@ from extension import limiter
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from Database.db import get_db_connection
+from Security.logging import init_sentry
 
+
+init_sentry()
 
 app = Flask(__name__)
 
@@ -20,6 +23,9 @@ CORS(
 # )
 
 limiter.init_app(app)
+
+
+
 
 from Auth.routes import auth_bp
 app.register_blueprint(auth_bp, url_prefix='/auth')

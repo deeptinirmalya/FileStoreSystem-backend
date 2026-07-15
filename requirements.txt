@@ -11,3 +11,4 @@ pushbullet.py==0.12.0
 python-dotenv==1.0.1
 pytz==2025.1
 redis==6.4.0
+sentry-sdk==2.36.0
