@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 CORS(
     app,
-    origins=["https://giet.netlify.app", "https://at-logs.netlify.app", "https://vibelist.in", "https://stp-valiadator.netlify.app"],
+    origins=["https://giet.netlify.app", "https://at-logs.netlify.app", "https://vibelist.in"],
     supports_credentials=True
 )
 
