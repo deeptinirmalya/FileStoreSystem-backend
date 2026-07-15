@@ -84,7 +84,7 @@ def validate_creator_request(data):
 
 
 @stp_bp.route('/v1/creator_entry', methods=['POST'])
-@limiter.limit("100 per year",
+@limiter.limit("5 per hour",
     on_breach=lambda rl: (
         jsonify({
             "success": False,
@@ -138,16 +138,27 @@ def creator_entry():
         if cur.fetchone():
             return jsonify({
                 "success": False,
-                "error": "This whatsApp number is already exist has already submitted."
+                "error": "This whatsApp number is already exist."
             }), 409
             
+            #==================== check in partner's db ==============
+
         cur.execute(
-            "SELECT id FROM creator_entry WHERE ip_address=%s",(ip,))
+            "SELECT id FROM partners_entry WHERE email=%s",(email,))
         if cur.fetchone():
             return jsonify({
                 "success": False,
-                "error": "you have already submitted a request."
+                "error": "This email has already submitted."
             }), 409
+        
+        cur.execute(
+            "SELECT id FROM partners_entry WHERE whatsapp=%s",(whatsapp_number,))
+        if cur.fetchone():
+            return jsonify({
+                "success": False,
+                "error": "This whatsApp number is already exist."
+            }), 409
+        
 
         cur.execute("""
             INSERT INTO creator_entry
@@ -289,7 +300,7 @@ def validate_payload(data):
 
 
 @stp_bp.route("/v1/partners_entry", methods=["POST"])
-@limiter.limit("1 per year",
+@limiter.limit("5 per hour",
     on_breach=lambda rl: (
         jsonify({
             "success": False,
@@ -349,6 +360,7 @@ def partners_entry():
         conn = get_db_connection()
         cursor = conn.cursor(buffered=True)
 
+
         cursor.execute(
             "SELECT id FROM partners_entry WHERE email=%s",(data["email"].strip().lower(),))
         if cursor.fetchone():
@@ -362,15 +374,24 @@ def partners_entry():
         if cursor.fetchone():
             return jsonify({
                 "success": False,
-                "error": "This whatsApp number is already exist has already submitted."
+                "error": "This whatsApp number is already exist."
             }), 409
         
+    #================ check in creator's db ==================
         cursor.execute(
-            "SELECT id FROM partners_entry WHERE ip_address=%s",(ip,))
+            "SELECT id FROM creator_entry WHERE email=%s",(data["email"].strip().lower(),))
         if cursor.fetchone():
             return jsonify({
                 "success": False,
-                "error": "you have already submitted a request."
+                "error": "This email has already submitted."
+            }), 409
+        
+        cursor.execute(
+            "SELECT id FROM creator_entry WHERE whatsapp_number=%s",(data["whatsapp"].strip(),))
+        if cursor.fetchone():
+            return jsonify({
+                "success": False,
+                "error": "This whatsApp number is already exist."
             }), 409
 
         cursor.execute(sql_query, values)
