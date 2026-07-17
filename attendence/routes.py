@@ -44,7 +44,7 @@ def calculate_attendance_metrics(attendance_list):
 
     return round(current_pct, 2), message, action_value, status
 
-@attendence_bp.route("/v1/get_attendance", methods=["POST"])
+@attendence_bp.route("/v1/get_attendance", methods=["GET"])
 @token_required
 @status_required("active")
 @role_required("user")
