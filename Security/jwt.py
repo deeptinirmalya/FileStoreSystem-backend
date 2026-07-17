@@ -26,7 +26,6 @@ def token_required(f):
     def wrapper(*args, **kwargs):
         token = None
         
-        # CHANGED: Look for the Authorization header instead of cookies
         auth_header = request.headers.get("Authorization")
         
         if auth_header and auth_header.startswith("Bearer "):

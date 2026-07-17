@@ -8,6 +8,8 @@ import os
 import requests
 import math
 from dotenv import load_dotenv
+from extension import limiter, get_client_ip
+
 
 load_dotenv()
 
@@ -45,6 +47,14 @@ def calculate_attendance_metrics(attendance_list):
     return round(current_pct, 2), message, action_value, status
 
 @attendence_bp.route("/v1/get_attendance", methods=["GET"])
+@limiter.limit("5 per hour",
+    on_breach=lambda rl: (
+        jsonify({
+            "success": False,
+            "message": "You can only submit this form 1 times per hour."
+        }),
+        429
+        ))
 @token_required
 @status_required("active")
 @role_required("user")
