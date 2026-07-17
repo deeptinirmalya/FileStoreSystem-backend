@@ -51,11 +51,13 @@ def calculate_attendance_metrics(attendance_list):
 def get_attendance():
     user_id = request.user_id
 
+    roll_number = request.args.get("roll_number")
+
     db = get_db_connection()
     cur = db.cursor(dictionary=True)
     
     try:
-        cur.execute("SELECT roll, status FROM users WHERE id=%s", (user_id,))
+        cur.execute("SELECT status FROM users WHERE id=%s", (user_id,))
         details = cur.fetchone()
         
         if not details:
@@ -64,10 +66,10 @@ def get_attendance():
         if details["status"] != "active":
             return jsonify({"detail": "account is not active contact to the admin"}), 503
         
-        roll = details["roll"].upper()
+        roll_number = roll_number.upper()
 
         url = os.getenv("ERP_URL")
-        erp_url = f"{url}{roll}"
+        erp_url = f"{url}{roll_number}"
 
         try:
             response = requests.get(erp_url, timeout=10.0)
@@ -86,7 +88,7 @@ def get_attendance():
         percentage, message, action_value, status = calculate_attendance_metrics(attendance_list)
         
         return jsonify({
-            "roll_number": roll,
+            "roll_number": roll_number,
             "percentage": percentage,
             "message": message,
             "action_value": action_value,

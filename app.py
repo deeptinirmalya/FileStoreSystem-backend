@@ -47,10 +47,9 @@ def health_check():
     db = None
     try:
         db = get_db_connection()
-        # Using buffered=True prevents the "Unread result" error
         cur = db.cursor(buffered=True) 
         cur.execute("SELECT 1")
-        cur.fetchall() # Ensure we consume the result
+        cur.fetchall()
         cur.close()
         return jsonify({"status": "healthy"}), 200
     except Exception as e:
