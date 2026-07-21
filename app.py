@@ -42,6 +42,7 @@ app.register_blueprint(attendence_bp, url_prefix='/attendence')
 from other.routes import stp_bp
 app.register_blueprint(stp_bp, url_prefix='/stp')
 
+@limiter.exempt
 @app.route('/', methods=['GET'])
 def health_check():
     db = None
