@@ -413,3 +413,61 @@ def partners_entry():
             cursor.close()
         if conn:
             conn.close()
+
+@stp_bp.route('/v1/creator_entries', methods=['GET'])
+@limiter.limit("10 per hour",
+    on_breach=lambda rl: (
+        jsonify({
+            "success": False,
+            "message": "Rate limit exceeded. Try again later."
+        }),
+        429
+    ))
+def get_creator_entries():
+    # Validate API key from header against MASTER_API_KEY from .env
+    client_key = request.headers.get('MASTER-API-KEY')
+    master_key = os.getenv('MASTER_API_KEY')
+    if not client_key or client_key != master_key:
+        return jsonify({"success": False, "error": "Unauthorized"}), 401
+
+    db = get_db_connection()
+    cur = db.cursor(dictionary=True)
+    try:
+        cur.execute("SELECT id, name, whatsapp_number, email, platform_link, niche, ip_address, user_agent, created_at FROM creator_entry")
+        rows = cur.fetchall()
+        return jsonify({"success": True, "data": rows}), 200
+    except Exception as e:
+        # Log the exception if needed
+        return jsonify({"success": False, "error": "Internal server error"}), 500
+    finally:
+        cur.close()
+        db.close()
+        
+@stp_bp.route('/v1/partners_entries', methods=['GET'])
+@limiter.limit("10 per hour",
+    on_breach=lambda rl: (
+        jsonify({
+            "success": False,
+            "message": "Rate limit exceeded. Try again later."
+        }),
+        429
+    ))
+def get_partners_entries():
+    # Validate API key from header against MASTER_API_KEY from .env
+    client_key = request.headers.get('MASTER-API-KEY')
+    master_key = os.getenv('MASTER_API_KEY')
+    if not client_key or client_key != master_key:
+        return jsonify({"success": False, "error": "Unauthorized"}), 401
+
+    db = get_db_connection()
+    cur = db.cursor(dictionary=True)
+    try:
+        cur.execute("SELECT id, partners_location, company_name, contact_name, email, whatsapp, social_link, industry, operation_type, goal_drive_walk_ins, goal_app_downloads, goal_sell_tickets, goal_brand_awareness, goal_platform_traffic, revenue, ip_address, user_agent, created_at FROM partners_entry")
+        rows = cur.fetchall()
+        return jsonify({"success": True, "data": rows}), 200
+    except Exception as e:
+        # Log the exception if needed
+        return jsonify({"success": False, "error": "Internal server error"}), 500
+    finally:
+        cur.close()
+        db.close()
