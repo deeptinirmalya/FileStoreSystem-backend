@@ -433,7 +433,7 @@ def get_creator_entries():
     db = get_db_connection()
     cur = db.cursor(dictionary=True)
     try:
-        cur.execute("SELECT id, name, whatsapp_number, email, platform_link, niche, ip_address, user_agent, created_at FROM creator_entry")
+        cur.execute("SELECT id, name, whatsapp_number, email, platform_link, niche, created_at FROM creator_entry")
         rows = cur.fetchall()
         return jsonify({"success": True, "data": rows}), 200
     except Exception as e:
@@ -462,7 +462,7 @@ def get_partners_entries():
     db = get_db_connection()
     cur = db.cursor(dictionary=True)
     try:
-        cur.execute("SELECT id, partners_location, company_name, contact_name, email, whatsapp, social_link, industry, operation_type, goal_drive_walk_ins, goal_app_downloads, goal_sell_tickets, goal_brand_awareness, goal_platform_traffic, revenue, ip_address, user_agent, created_at FROM partners_entry")
+        cur.execute("SELECT id, contact_name, email, whatsapp, created_at FROM partners_entry")
         rows = cur.fetchall()
         return jsonify({"success": True, "data": rows}), 200
     except Exception as e:
